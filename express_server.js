@@ -21,8 +21,9 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req,res) => {
-  const urlList = {url: urlDatabase};
-  res.render("urls_index");
+  const urlList = {urls: urlDatabase};
+  console.log(urlList);
+  res.render("urls_index", urlList);
 });
 
 // example to show variable a is locally scoped and is not accessible by other get calls
