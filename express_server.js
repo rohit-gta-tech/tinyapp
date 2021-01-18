@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-app.set("view engine", "ejs")
+app.set("view engine", "ejs");
 const PORT = 8080; // default port 8080
 
 const urlDatabase = {
@@ -18,6 +18,11 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
+app.get("/urls", (req,res) => {
+  const urlList = {url: urlDatabase};
+  res.render("urls_index");
 });
 
 // example to show variable a is locally scoped and is not accessible by other get calls
