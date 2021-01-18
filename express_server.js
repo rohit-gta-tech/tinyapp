@@ -48,6 +48,8 @@ app.get("/urls/:shortURL", (req,res) => {
 //POST route for submitting forms through urls/new, since the action attribute of the forms in /urls/new is set to /urls
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
+  urlDatabase[generateRandomString()] = req.body.longURL;     //adds the new URL to our urlDatabase object
+  console.log(urlDatabase);  //Log the updated urlDatabase object in the terminal
   res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
 
