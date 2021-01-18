@@ -55,3 +55,13 @@ app.post("/urls", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+//funciton for generating random alphanumeric string of 6 characters
+const generateRandomString = () => {
+    let range = '0123456789abcdefghijklmnopqrstuvwxyz';
+    let id = '';
+    for (let i = 0; i < 6; i++) {
+        id += range[Math.floor(Math.random()*36)];
+    }
+    return id;
+}
