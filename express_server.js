@@ -12,12 +12,22 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls.json", (req, res) => {
-    res.json(urlDatabase);
+  res.json(urlDatabase);
 });
 
 app.get("/hello", (req, res) => {
-    res.send("<html><body>Hello <b>World</b></body></html>\n");
-  });
+  res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
+// example to show variable a is locally scoped and is not accessible by other get calls
+/*app.get("/set", (req, res) => {
+  const a = 1;
+  res.send(`a = ${a}`);
+});
+   
+app.get("/fetch", (req, res) => {
+  res.send(`a = ${a}`);
+});*/
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
