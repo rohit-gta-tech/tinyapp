@@ -41,12 +41,8 @@ app.get("/urls/new", (req, res) => {
 
 //GET call to show a particular URL and its short name by passing its short name as request parameter
 app.get("/urls/:shortURL", (req,res) => {
-  if (urlDatabase[req.params.shortURL]) {
     const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
     res.render("urls_show", templateVars);
-  } else {
-    res.redirect("/urls");
-  }
 });
 
 //POST route for submitting forms through urls/new, since the action attribute of the forms in /urls/new is set to /urls
@@ -58,7 +54,6 @@ app.post("/urls", (req, res) => {
   //res.send("Ok");         // Respond with 'Ok' (we will replace this)
   res.redirect(`/urls/${newId}`);     //Redirected to the newly submitted URL
 });
-
 
 // Redirect any request to "/u/:shortURL" to its longURL
 app.get("/u/:shortURL", (req, res) => {
