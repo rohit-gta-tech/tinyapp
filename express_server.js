@@ -72,6 +72,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect('/urls');
 });
 
+//POST route for updating URLs
+app.post("/urls/:shortURL/update", (req, res) => {
+  urlDatabase[req.params.shortURL] = req.body.longURL;
+  res.redirect(`/urls/${req.params.shortURL}`);
+});
+
 //funciton for generating random alphanumeric string of 6 characters
 const generateRandomString = () => {
   let range = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
