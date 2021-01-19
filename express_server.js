@@ -41,8 +41,12 @@ app.get("/urls/new", (req, res) => {
 
 //GET call to show a particular URL and its short name by passing its short name as request parameter
 app.get("/urls/:shortURL", (req,res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
-  res.render("urls_show", templateVars);
+  if (urlDatabase[req.params.shortURL]) {
+    const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+    res.render("urls_show", templateVars);
+  } else {
+    res.redirect("/urls");
+  }
 });
 
 //POST route for submitting forms through urls/new, since the action attribute of the forms in /urls/new is set to /urls
@@ -55,6 +59,13 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${newId}`);     //Redirected to the newly submitted URL
 });
 
+
+// Redirect any request to "/u/:shortURL" to its longURL
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
+});
+
 //Server listening
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -62,10 +73,10 @@ app.listen(PORT, () => {
 
 //funciton for generating random alphanumeric string of 6 characters
 const generateRandomString = () => {
-  let range = '0123456789abcdefghijklmnopqrstuvwxyz';
+  let range = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let id = '';
   for (let i = 0; i < 6; i++) {
-    id += range[Math.floor(Math.random() * 36)];
+    id += range[Math.floor(Math.random() * 62)];
   }
   return id;
 };
