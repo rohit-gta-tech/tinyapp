@@ -41,8 +41,8 @@ app.get("/urls/new", (req, res) => {
 
 //GET call to show a particular URL and its short name by passing its short name as request parameter
 app.get("/urls/:shortURL", (req,res) => {
-    const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
-    res.render("urls_show", templateVars);
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  res.render("urls_show", templateVars);
 });
 
 //POST route for submitting forms through urls/new, since the action attribute of the forms in /urls/new is set to /urls
@@ -64,6 +64,12 @@ app.get("/u/:shortURL", (req, res) => {
 //Server listening
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
+});
+
+// POST route for deleting URLs
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect('/urls');
 });
 
 //funciton for generating random alphanumeric string of 6 characters
