@@ -118,11 +118,9 @@ app.post("/register", (req, res) => {
   if(!incomingEmail || !incomingPassword) {
     res.status(400);
     res.send('Sorry, you should enter both email-id and a password to register!');
-    console.log(users);
   } else if(emailExists(users, incomingEmail)) {
     res.status(400);
     res.send('Sorry, you have already registered! Please login with your email-id');
-    console.log(users);
   } else {
     //Adding new user to database
     const newUser = {
@@ -132,10 +130,14 @@ app.post("/register", (req, res) => {
     }
     users[newUser.id] = newUser;
     res.cookie('user_id', newUser.id);
-    console.log(users);
     res.redirect('/urls');
   }
 });
+
+//GET route for user login page
+app.get("/login", (req, res) => {
+  res.render("user_login");
+})
 
 //Server listening
 app.listen(PORT, () => {
