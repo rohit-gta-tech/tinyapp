@@ -114,16 +114,27 @@ app.post("/register", (req, res) => {
   const incomingEmail = req.body.email;
   const incomingPassword = req.body.password;
   
-  //Adding new user to database
-  const newUser = {
-    id: generateRandomString(),
-    email: incomingEmail,
-    passwword: incomingPassword
+  //If the e-mail or password are empty strings, send back a response with the 400 status code.
+  if(!incomingEmail || !incomingPassword) {
+    res.status(400);
+    res.send('Sorry, you should enter both email-id and a password to register!');
+    console.log(users);
+  } else if(emailExists(users, incomingEmail)) {
+    res.status(400);
+    res.send('Sorry, you have already registered! Please login with your email-id');
+    console.log(users);
+  } else {
+    //Adding new user to database
+    const newUser = {
+      id: generateRandomString(),
+      email: incomingEmail,
+      passwword: incomingPassword
+    }
+    users[newUser.id] = newUser;
+    res.cookie('user_id', newUser.id);
+    console.log(users);
+    res.redirect('/urls');
   }
-  users[newUser.id] = newUser;
-  res.cookie('user_id', newUser.id);
-  //console.log(users);
-  res.redirect('/urls');
 });
 
 //Server listening
@@ -131,7 +142,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-//funciton for generating random alphanumeric string of 6 characters
+//functon for generating random alphanumeric string of 6 characters
 const generateRandomString = () => {
   let range = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let id = '';
@@ -140,3 +151,14 @@ const generateRandomString = () => {
   }
   return id;
 };
+
+
+//Helper function to check if user already exists
+const emailExists = (users, newEmail) => {
+  for(let user_id in users) {
+    if (users[user_id].email === newEmail) {
+      return true;
+    }
+  }
+  return false;
+}
