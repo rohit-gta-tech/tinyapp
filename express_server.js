@@ -49,6 +49,7 @@ app.get("/hello", (req, res) => {
 //GET call to show list or index of all URLs
 app.get("/urls", (req,res) => {
   const templateVars = {urls: urlDatabase, user: users[req.cookies['user_id']]};
+  console.log(templateVars);
   res.render("urls_index", templateVars);
 });
 
@@ -94,8 +95,21 @@ app.post("/urls/:shortURL/update", (req, res) => {
 
 //POST route for login
 app.post("/login", (req, res) => {
-  res.cookies('username', req.body.username);
+  const incomingEmail = req.body.email;
+  const incomingPassword = req.body.password;
+
+  if(!emailExists(users, incomingEmail)) {
+    res.status(403);
+    res.send('Sorry, it seems you are not registered. Please go to the registration page');
+  }
+
+  if(!idFetcher(users, incomingEmail, incomingPassword)) {
+    res.status(403);
+    res.send('Sorry, your password is incorrect. Please try again!');
+  }
+  res.cookie('user_id', idFetcher(users, incomingEmail, incomingPassword));
   res.redirect('/urls');
+  
 });
 
 //POST route for logout
@@ -106,7 +120,8 @@ app.post("/logout", (req, res) => {
 
 //GET route for user registration landing page
 app.get("/register", (req, res) => {
-  res.render("user_register");
+  const templateVars = {user:""};
+  res.render("user_register", templateVars);
 });
 
 //POST route for user registration
@@ -126,9 +141,10 @@ app.post("/register", (req, res) => {
     const newUser = {
       id: generateRandomString(),
       email: incomingEmail,
-      passwword: incomingPassword
+      password: incomingPassword
     }
     users[newUser.id] = newUser;
+    console.log(users);
     res.cookie('user_id', newUser.id);
     res.redirect('/urls');
   }
@@ -136,7 +152,8 @@ app.post("/register", (req, res) => {
 
 //GET route for user login page
 app.get("/login", (req, res) => {
-  res.render("user_login");
+  const templateVars = {user:""};
+  res.render("user_login", templateVars);
 })
 
 //Server listening
@@ -164,3 +181,13 @@ const emailExists = (users, newEmail) => {
   }
   return false;
 }
+
+//Helper function for password matching and userid fetching if email and password are matching in our database
+const idFetcher = (users, email, password) => {
+  let id = Object.keys(users).find(element => users[element].email === email);
+  if (users[id].password === password) {
+    return id;
+  } else {
+    return false;
+  }
+};
