@@ -11,11 +11,25 @@ app.use(cookieParser());
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
-//original database
+//original URL database
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+//original user database
+const users = { 
+  "x2Rpl0an": {
+    id: "x2Rpl0an", 
+    email: "John@mydomaon.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "3RcCfj8y": {
+    id: "3RcCfj8y", 
+    email: "Mark@yourdomain.com", 
+    password: "dishwasher-funk"
+  }
+}
 
 //rendering homepage
 app.get("/", (req, res) => {
@@ -34,19 +48,19 @@ app.get("/hello", (req, res) => {
 
 //GET call to show list or index of all URLs
 app.get("/urls", (req,res) => {
-  const templateVars = {urls: urlDatabase, username: req.cookies["username"]};
+  const templateVars = {urls: urlDatabase, user: users[req.cookies['user_id']]};
   res.render("urls_index", templateVars);
 });
 
 //GET route to render the new urls_new templatte
 app.get("/urls/new", (req, res) => {
-  const templateVars = {username: req.cookies["username"]};
+  const templateVars = {user: users[req.cookies['user_id']]};
   res.render("urls_new", templateVars);
 });
 
 //GET call to show a particular URL and its short name by passing its short name as request parameter
 app.get("/urls/:shortURL", (req,res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"]};
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[req.cookies['user_id']]};
   res.render("urls_show", templateVars);
 });
 
@@ -80,13 +94,35 @@ app.post("/urls/:shortURL/update", (req, res) => {
 
 //POST route for login
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  res.cookies('username', req.body.username);
   res.redirect('/urls');
 });
 
 //POST route for logout
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
+  res.redirect('/urls');
+});
+
+//GET route for user registration landing page
+app.get("/register", (req, res) => {
+  res.render("user_register");
+});
+
+//POST route for user registration
+app.post("/register", (req, res) => {
+  const incomingEmail = req.body.email;
+  const incomingPassword = req.body.password;
+  
+  //Adding new user to database
+  const newUser = {
+    id: generateRandomString(),
+    email: incomingEmail,
+    passwword: incomingPassword
+  }
+  users[newUser.id] = newUser;
+  res.cookie('user_id', newUser.id);
+  //console.log(users);
   res.redirect('/urls');
 });
 
