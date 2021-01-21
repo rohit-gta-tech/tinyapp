@@ -13,18 +13,20 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 //original URL database
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "x2Rpl0" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "x2Rpl0" },
+  q2nn9U: { longURL: "https://www.facebook.com", userID: "3RcCfj" },
+  we44Mn: { longURL: "https://www.wikipedia.org", userID: "3RcCfj" }
 };
 
 //original user database
 const users = { 
-  "x2Rpl0an": {
+  "x2Rpl0": {
     id: "x2Rpl0an", 
     email: "John@mydomaon.com", 
     password: "purple-monkey-dinosaur"
   },
- "3RcCfj8y": {
+ "3RcCfj": {
     id: "3RcCfj8y", 
     email: "Mark@yourdomain.com", 
     password: "dishwasher-funk"
@@ -48,28 +50,36 @@ app.get("/hello", (req, res) => {
 
 //GET call to show list or index of all URLs
 app.get("/urls", (req,res) => {
-  const templateVars = {urls: urlDatabase, user: users[req.cookies['user_id']]};
-  console.log(templateVars);
+  const templateVars = {urls: urlsForUser(urlDatabase, req.cookies['user_id']), user: users[req.cookies['user_id']]};
   res.render("urls_index", templateVars);
 });
 
-//GET route to render the new urls_new templatte
+//GET route to render the new urls_new template
 app.get("/urls/new", (req, res) => {
+  if(!req.cookies['user_id']) {
+    res.redirect("/login")
+  }
   const templateVars = {user: users[req.cookies['user_id']]};
   res.render("urls_new", templateVars);
 });
 
 //GET call to show a particular URL and its short name by passing its short name as request parameter
 app.get("/urls/:shortURL", (req,res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[req.cookies['user_id']]};
-  res.render("urls_show", templateVars);
+  //Check to find it the shortURL paramater is a key of or belongs to the filetered database of the respective user
+  if (urlsForUser(urlDatabase, req.cookies['user_id']).hasOwnProperty(req.params.shortURL)) {
+    const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.cookies['user_id']]};
+    res.render("urls_show", templateVars);
+  } else {
+    res.status(400);
+    res.send("Not a valid tinyURL! Or user not logged in!")
+  }
 });
 
 //POST route for submitting forms through urls/new, since the action attribute of the forms in /urls/new is set to /urls
 app.post("/urls", (req, res) => {
   //console.log(req.body);  // Log the POST request body to the console
   let newId = generateRandomString();
-  urlDatabase[newId] = req.body.longURL;     //adds the new URL to our urlDatabase object
+  urlDatabase[newId] = {longURL: req.body.longURL, userID: req.cookies['user_id']};     //adds the new URL to our urlDatabase object
   //console.log(urlDatabase);  //Log the updated urlDatabase object in the terminal
   //res.send("Ok");         // Respond with 'Ok' (we will replace this)
   res.redirect(`/urls/${newId}`);     //Redirected to the newly submitted URL
@@ -77,19 +87,23 @@ app.post("/urls", (req, res) => {
 
 // Redirect any request to "/u/:shortURL" to its longURL
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  // to check if the urlforUser data has the key shortURL
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
 // POST route for deleting URLs
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect('/urls');
+  if (urlsForUser(urlDatabase, req.cookies['user_id']).hasOwnProperty(req.params.shortURL)) {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect('/urls');
+  }
 });
 
 //POST route for updating URLs
 app.post("/urls/:shortURL/update", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.longURL;
+  if (urlsForUser(urlDatabase, req.cookies['user_id']).hasOwnProperty(req.params.shortURL))
+  urlDatabase[req.params.shortURL] = { longURL: req.body.longURL, userID: req.cookies['user_id'] }
   res.redirect(`/urls/${req.params.shortURL}`);
 });
 
@@ -144,7 +158,6 @@ app.post("/register", (req, res) => {
       password: incomingPassword
     }
     users[newUser.id] = newUser;
-    console.log(users);
     res.cookie('user_id', newUser.id);
     res.redirect('/urls');
   }
@@ -191,3 +204,15 @@ const idFetcher = (users, email, password) => {
     return false;
   }
 };
+
+
+//filtering urldatabase based on userid
+
+const urlsForUser = function(database, uid) {
+  let filteredKeys = Object.keys(database).filter(element => database[element].userID === uid);
+  let filteredDatabase = {};
+  for (let key of filteredKeys) {
+    filteredDatabase[key] = database[key];
+  }
+  return filteredDatabase;
+}
