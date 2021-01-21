@@ -3,7 +3,11 @@ const app = express();
 app.set("view engine", "ejs");
 const PORT = 8080; // default port 8080
 
-//Middleware ccokie-parser
+//bcrypt module for password hashing
+const bcrypt = require('bcrypt');
+
+
+//Middleware cookie-parser
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
@@ -20,18 +24,7 @@ const urlDatabase = {
 };
 
 //original user database
-const users = { 
-  "x2Rpl0": {
-    id: "x2Rpl0an", 
-    email: "John@mydomaon.com", 
-    password: "purple-monkey-dinosaur"
-  },
- "3RcCfj": {
-    id: "3RcCfj8y", 
-    email: "Mark@yourdomain.com", 
-    password: "dishwasher-funk"
-  }
-}
+const users = {};
 
 //rendering homepage
 app.get("/", (req, res) => {
@@ -112,16 +105,19 @@ app.post("/login", (req, res) => {
   const incomingEmail = req.body.email;
   const incomingPassword = req.body.password;
 
-  if(!emailExists(users, incomingEmail)) {
+  if(!getUserByEmail(users, incomingEmail)) {
     res.status(403);
     res.send('Sorry, it seems you are not registered. Please go to the registration page');
   }
 
-  if(!idFetcher(users, incomingEmail, incomingPassword)) {
+  const user = getUserByEmail(users, incomingEmail);
+
+  if(!bcrypt.compareSync(incomingPassword, user.password)) {
     res.status(403);
     res.send('Sorry, your password is incorrect. Please try again!');
   }
-  res.cookie('user_id', idFetcher(users, incomingEmail, incomingPassword));
+
+  res.cookie('user_id', user.id);
   res.redirect('/urls');
   
 });
@@ -147,7 +143,7 @@ app.post("/register", (req, res) => {
   if(!incomingEmail || !incomingPassword) {
     res.status(400);
     res.send('Sorry, you should enter both email-id and a password to register!');
-  } else if(emailExists(users, incomingEmail)) {
+  } else if(getUserByEmail(users, incomingEmail)) {
     res.status(400);
     res.send('Sorry, you have already registered! Please login with your email-id');
   } else {
@@ -155,10 +151,11 @@ app.post("/register", (req, res) => {
     const newUser = {
       id: generateRandomString(),
       email: incomingEmail,
-      password: incomingPassword
+      password: bcrypt.hashSync(incomingPassword, 10)
     }
     users[newUser.id] = newUser;
     res.cookie('user_id', newUser.id);
+    console.log(users);
     res.redirect('/urls');
   }
 });
@@ -185,26 +182,15 @@ const generateRandomString = () => {
 };
 
 
-//Helper function to check if user already exists
-const emailExists = (users, newEmail) => {
-  for(let user_id in users) {
-    if (users[user_id].email === newEmail) {
-      return true;
+//Helper function to check if user already exists and retrieving the user through emailId
+const getUserByEmail = (userDb, email) => {
+  for(let user in userDb) {
+    if (userDb[user].email === email) {
+      return userDb[user];
     }
   }
   return false;
 }
-
-//Helper function for password matching and userid fetching if email and password are matching in our database
-const idFetcher = (users, email, password) => {
-  let id = Object.keys(users).find(element => users[element].email === email);
-  if (users[id].password === password) {
-    return id;
-  } else {
-    return false;
-  }
-};
-
 
 //filtering urldatabase based on userid
 
