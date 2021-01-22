@@ -56,8 +56,7 @@ app.get("/urls/:shortURL", (req,res) => {
   if (!req.session.user_id) {
     res.status(400).render("urls_show", {user: null, error: "No such tinyURL exists! Please login or register!"});
   } else {
-    //Check to find it the shortURL paramater is a key of or belongs to the filtered database of the respective user
-    if (urlsForUser(urlDatabase, req.session.user_id).hasOwnProperty(req.params.shortURL)) {
+    if (urlDatabase[req.params.shortURL].userID === req.session.user_id) {
       const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.session.user_id], error: null};
       res.render("urls_show", templateVars);
     } else {
@@ -90,7 +89,7 @@ app.post("/urls", (req, res) => {
 //POST route for updating URLs
 app.post("/urls/:shortURL", (req, res) => {
   if (req.session.user_id) {
-    if (urlsForUser(urlDatabase, req.session.user_id).hasOwnProperty(req.params.shortURL)) {
+    if (urlDatabase[req.params.shortURL].userID === req.session.user_id) {
       urlDatabase[req.params.shortURL] = { longURL: req.body.longURL, userID: req.session.user_id };
       res.redirect('/urls');
     } else {
@@ -104,7 +103,7 @@ app.post("/urls/:shortURL", (req, res) => {
 // POST route for deleting URLs
 app.post("/urls/:shortURL/delete", (req, res) => {
   if (req.session.user_id) {
-    if (urlsForUser(urlDatabase, req.session.user_id).hasOwnProperty(req.params.shortURL)) {
+    if (urlDatabase[req.params.shortURL].userID === req.session.user_id) {
       delete urlDatabase[req.params.shortURL];
       res.redirect('/urls');
     } else {
