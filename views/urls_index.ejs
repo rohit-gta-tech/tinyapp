@@ -21,6 +21,9 @@
           <th scope="col">Long URL</th>
           <th scope="col">EDIT</th>
           <th scope="col">DELETE</th>
+          <th scope="col">DATE CREATED</th>
+          <th scope="col">PAGE VISITS</th>
+          <th scope="col">UNIQUE VISITORS</th>
         </tr>
       </thead>
         <tbody>
@@ -32,10 +35,13 @@
                 <button type="submit button" class="btn btn-primary">Edit</button>
               </form>
             </td>
-              <td><form method="POST" action="/urls/<%= url %>/delete">
+              <td><form method="POST" action="/urls/<%= url %>/delete?_method=DELETE">
                 <button type="submit button" class="btn btn-danger">Delete</button>
               </form>
             </td>
+            <td><%= urls[url].dateCreated %></td>
+            <td><%= urls[url].visits.length %></td>
+            <td><%= urls[url].uniqueVisits %></td>
             </tr>
           <% } %>
         </tbody>
